@@ -13,6 +13,7 @@ type Switch interface {
 	On(Delay time.Duration) error
 	Off(Delay time.Duration) error
 	Toggle(Delay time.Duration) error
+	String() string
 }
 
 type State int
@@ -59,6 +60,10 @@ type GPIO struct {
 	name SerialName
 }
 
+func (g *GPIO) String() string {
+	return fmt.Sprintf("GPIO {name: %s}", g.name)
+}
+
 func (g *GPIO) Claim(sn SerialName) error {
 	if _, err := host.Init(); err != nil {
 		return fmt.Errorf("host failed to initialize while claiming %s: %w", sn, err)
@@ -82,13 +87,17 @@ func (g *GPIO) Send(s State) error {
 }
 
 const (
-	RelayTerminal       SerialName = "GPI017"
-	RelayBackupTerminal SerialName = "GPI027"
+	RelayTerminal       SerialName = "GPIO17"
+	RelayBackupTerminal SerialName = "GPIO27"
 )
 
 type OptoRelay struct {
 	state State
 	gpio  GPIO
+}
+
+func (or *OptoRelay) String() string {
+	return fmt.Sprintf("OptoRelay {state: %v, terminal: %s}", or.state, or.gpio.String())
 }
 
 func (or *OptoRelay) On(d time.Duration) error {

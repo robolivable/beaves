@@ -6,20 +6,29 @@ import (
 	"os"
 )
 
+type Log struct {
+	Enabled bool `json:"enabled"`
+}
+
 type Actors struct {
 	Known []string `json:"known"`
 }
 
 type Bluetooth struct {
 	AdvertisementName        string `json:"advertisementName"`
+	AdvertisementDelayMs     int    `json:"advertisementDelayMs"`
 	ServiceID                string `json:"serviceId"`
 	IndicateCharacteristicID string `json:"indicateCharacteristicId"`
 	ConnectionPoolSize       int    `json:"connectionPoolSize"`
+	ConnectionsLimit         int    `json:"connectionsLimit"`
+	ConnectionLimitDelayMs   int    `json:"connectionLimitDelayMs"`
+	DisconnectionDelayMs     int    `json:"disconnectionDelayMs"`
 }
 
 type Config struct {
 	Bluetooth Bluetooth `json:"bluetooth"`
 	Actors    Actors    `json:"actors"`
+	Log       Log       `json:"log"`
 }
 
 var RuntimeConfig Config

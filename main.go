@@ -1,10 +1,11 @@
-package beaves
+package main
 
 import (
 	"time"
 
 	"github.com/robolivable/beaves/config"
 	"github.com/robolivable/beaves/controller"
+	"github.com/robolivable/beaves/log"
 	"github.com/robolivable/beaves/radar"
 )
 
@@ -13,19 +14,27 @@ type Beaves struct {
 }
 
 func (b *Beaves) Manage(s controller.Switch) error {
+	log.Info("managing switch on %s", s.String())
 	events, err := b.sentry.Search()
 	if err != nil {
 		return err
 	}
 	for event := range events {
+		log.Info("%s", event.String())
 		switch event.Action {
 		case radar.Entering:
-			if err := s.On(1 * time.Second); err != nil {
-				return err
+			log.Info("openning relay")
+			if err := s.On(time.Duration(1) * time.Second); err != nil {
+				log.Error(err.Error())
+				continue
+				//return err
 			}
 		case radar.Exiting:
-			if err := s.Off(1 * time.Second); err != nil {
-				return err
+			log.Info("closing relay")
+			if err := s.Off(time.Duration(1) * time.Second); err != nil {
+				log.Error(err.Error())
+				continue
+				//return err
 			}
 		}
 	}

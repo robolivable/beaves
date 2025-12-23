@@ -2,9 +2,11 @@ package radar
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/robolivable/beaves/config"
+	"github.com/robolivable/beaves/log"
 	"tinygo.org/x/bluetooth"
 )
 
@@ -17,7 +19,7 @@ type Actor struct {
 
 func (a *Actor) Known() bool {
 	for _, id := range config.RuntimeConfig.Actors.Known {
-		if a.ID == ID(id) {
+		if strings.EqualFold(string(a.ID), id) {
 			return true
 		}
 	}
@@ -30,6 +32,13 @@ const (
 	Entering Action = iota
 	Exiting
 )
+
+func (a Action) String() string {
+	if a == Entering {
+		return "Entering"
+	}
+	return "Exiting"
+}
 
 func GetAction(connected bool) Action {
 	if connected {
@@ -44,6 +53,10 @@ type Event struct {
 	Action Action
 
 	Epoch time.Time
+}
+
+func (e *Event) String() string {
+	return fmt.Sprintf("Event {actor: %+v, action: %+v, epoch: %+v}", e.Actor, e.Action.String(), e.Epoch)
 }
 
 type Payload struct {
@@ -61,48 +74,38 @@ type Proximity interface {
 type BTSentry struct {
 	adapter                    *bluetooth.Adapter
 	advertisementName          string
+	advertisementDelayMs       int
 	connectionPoolSize         int
 	serviceUUID                bluetooth.UUID
 	indicateCharacteristicUUID bluetooth.UUID
 	indicateCharacteristic     *bluetooth.Characteristic
+
+	disconnectionLimitDelayMs int
 }
 
 func (bts *BTSentry) Search() (chan *Event, error) {
-	if err := bts.adapter.AddService(&bluetooth.Service{
-		UUID: bts.serviceUUID,
-		Characteristics: []bluetooth.CharacteristicConfig{
-			{
-				UUID:   bts.indicateCharacteristicUUID,
-				Flags:  bluetooth.CharacteristicIndicatePermission,
-				Handle: bts.indicateCharacteristic,
-			},
-		},
-	}); err != nil {
-		return nil, err
-	}
-	advertisement := bts.adapter.DefaultAdvertisement()
-	if err := advertisement.Configure(bluetooth.AdvertisementOptions{
-		LocalName:    bts.advertisementName,
-		ServiceUUIDs: []bluetooth.UUID{bts.serviceUUID},
-	}); err != nil {
-		return nil, err
-	}
 	response := make(chan *Event, bts.connectionPoolSize)
 	bts.adapter.SetConnectHandler(func(device bluetooth.Device, connected bool) {
+		log.InfoMemoize("new connection {device: %+v, connected: %t}", device, connected)
+		if len(response) == bts.connectionPoolSize {
+			// NOTE: this is a DDoS guard
+			time.Sleep(time.Duration(100) * time.Millisecond)
+			device.Disconnect()
+			return
+		}
+		actor := Actor{
+			ID:   ID(device.Address.String()),
+			Name: device.Address.String(),
+		}
+		if !actor.Known() {
+			log.InfoMemoize("unknown actor: %v", actor)
+			go func() {
+				time.Sleep(time.Duration(bts.disconnectionLimitDelayMs) * time.Millisecond)
+				device.Disconnect()
+			}()
+			return
+		}
 		go func() {
-			if len(response) == bts.connectionPoolSize {
-				// NOTE: this is a DDoS guard
-				device.Disconnect()
-				return
-			}
-			actor := Actor{
-				ID:   ID(device.Address.String()),
-				Name: device.Address.String(),
-			}
-			if !actor.Known() {
-				device.Disconnect()
-				return
-			}
 			response <- &Event{
 				Actor:  &actor,
 				Action: GetAction(connected),
@@ -110,6 +113,34 @@ func (bts *BTSentry) Search() (chan *Event, error) {
 			}
 		}()
 	})
+	advertisement := bts.adapter.DefaultAdvertisement()
+	go func() {
+		defer func() {
+			log.Info("closing resposne channel")
+			close(response)
+		}()
+		for {
+			if err := advertisement.Configure(bluetooth.AdvertisementOptions{
+				LocalName:         bts.advertisementName,
+				AdvertisementType: bluetooth.AdvertisingTypeInd,
+			}); err != nil {
+				log.Error(err.Error())
+				return
+			}
+			log.Info("configured %s", bts.advertisementName)
+			if err := advertisement.Start(); err != nil {
+				log.Error(err.Error())
+				return
+			}
+			log.Info("advertising %s", bts.advertisementName)
+			time.Sleep(time.Duration(bts.advertisementDelayMs) * time.Millisecond)
+			if err := advertisement.Stop(); err != nil {
+				log.Error(err.Error())
+				return
+			}
+			log.Info("stopped advertising %s", bts.advertisementName)
+		}
+	}()
 	return response, nil
 }
 
@@ -131,9 +162,11 @@ func NewBTSentry(config config.Bluetooth) (*BTSentry, error) {
 	return &BTSentry{
 		adapter:                    adapter,
 		advertisementName:          config.AdvertisementName,
+		advertisementDelayMs:       config.AdvertisementDelayMs,
 		connectionPoolSize:         config.ConnectionPoolSize,
 		serviceUUID:                serviceUUID,
 		indicateCharacteristicUUID: characteristicUUID,
 		indicateCharacteristic:     &bluetooth.Characteristic{},
+		disconnectionLimitDelayMs:  config.DisconnectionDelayMs,
 	}, nil
 }
