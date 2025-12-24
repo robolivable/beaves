@@ -14,7 +14,7 @@ type Beaves struct {
 }
 
 func (b *Beaves) Manage(s controller.Switch) error {
-	log.Info("managing switch on %s", s.String())
+	log.Debug("managing switch on %s", s.String())
 	events, err := b.sentry.Search()
 	if err != nil {
 		return err
@@ -23,18 +23,16 @@ func (b *Beaves) Manage(s controller.Switch) error {
 		log.Info("%s", event.String())
 		switch event.Action {
 		case radar.Entering:
-			log.Info("openning relay")
+			log.Debug("openning relay")
 			if err := s.On(time.Duration(1) * time.Second); err != nil {
 				log.Error(err.Error())
 				continue
-				//return err
 			}
 		case radar.Exiting:
-			log.Info("closing relay")
+			log.Debug("closing relay")
 			if err := s.Off(time.Duration(1) * time.Second); err != nil {
 				log.Error(err.Error())
 				continue
-				//return err
 			}
 		}
 	}

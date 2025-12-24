@@ -24,6 +24,13 @@ func println(msg string, args ...any) {
 	fmt.Printf(msg+"\n", args...)
 }
 
+func Debug(msg string, args ...any) {
+	if !config.RuntimeConfig.Log.Debug {
+		return
+	}
+	println("debug: "+msg, args...)
+}
+
 func Info(msg string, args ...any) {
 	println("info: "+msg, args...)
 }

@@ -116,7 +116,7 @@ func (bts *BTSentry) Search() (chan *Event, error) {
 	advertisement := bts.adapter.DefaultAdvertisement()
 	go func() {
 		defer func() {
-			log.Info("closing resposne channel")
+			log.Debug("closing response channel")
 			close(response)
 		}()
 		for {
@@ -127,18 +127,18 @@ func (bts *BTSentry) Search() (chan *Event, error) {
 				log.Error(err.Error())
 				return
 			}
-			log.Info("configured %s", bts.advertisementName)
+			log.Debug("configured %s", bts.advertisementName)
 			if err := advertisement.Start(); err != nil {
 				log.Error(err.Error())
 				return
 			}
-			log.Info("advertising %s", bts.advertisementName)
+			log.Debug("advertising %s", bts.advertisementName)
 			time.Sleep(time.Duration(bts.advertisementDelayMs) * time.Millisecond)
 			if err := advertisement.Stop(); err != nil {
 				log.Error(err.Error())
 				return
 			}
-			log.Info("stopped advertising %s", bts.advertisementName)
+			log.Debug("stopped advertising %s", bts.advertisementName)
 		}
 	}()
 	return response, nil

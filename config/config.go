@@ -8,6 +8,7 @@ import (
 
 type Log struct {
 	Enabled bool `json:"enabled"`
+	Debug   bool `json:"debug"`
 }
 
 type Actors struct {
