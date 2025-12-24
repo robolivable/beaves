@@ -38,6 +38,10 @@ eventloop:
 			}
 		}
 
+		if len(proc) == 0 {
+			continue
+		}
+
 		event := proc[len(proc)-1]
 		log.Debug("%s", event.String())
 
