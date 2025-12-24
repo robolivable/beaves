@@ -101,6 +101,9 @@ func (or *OptoRelay) String() string {
 }
 
 func (or *OptoRelay) On(d time.Duration) error {
+	if or.state == On {
+		return nil
+	}
 	time.Sleep(d)
 	if err := or.gpio.Send(On); err != nil {
 		or.state = Error
@@ -111,6 +114,9 @@ func (or *OptoRelay) On(d time.Duration) error {
 }
 
 func (or *OptoRelay) Off(d time.Duration) error {
+	if or.state == Off {
+		return nil
+	}
 	time.Sleep(d)
 	if err := or.gpio.Send(Off); err != nil {
 		or.state = Error
