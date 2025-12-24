@@ -27,9 +27,10 @@ type Bluetooth struct {
 }
 
 type Config struct {
-	Bluetooth Bluetooth `json:"bluetooth"`
-	Actors    Actors    `json:"actors"`
-	Log       Log       `json:"log"`
+	Bluetooth        Bluetooth `json:"bluetooth"`
+	Actors           Actors    `json:"actors"`
+	Log              Log       `json:"log"`
+	EventLoopDelayMs int       `json:"eventLoopDelayMs"`
 }
 
 var RuntimeConfig Config

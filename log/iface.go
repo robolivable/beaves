@@ -35,7 +35,11 @@ func Info(msg string, args ...any) {
 	println("info: "+msg, args...)
 }
 
-func InfoMemoize(msg string, args ...any) {
+func Error(msg string, args ...any) {
+	println("error: "+msg, args...)
+}
+
+func printMemoize(msg string, args ...any) {
 	memoizeLock.Lock()
 	defer memoizeLock.Unlock()
 	log := strings.ToLower(fmt.Sprintf(msg, args...))
@@ -51,9 +55,13 @@ func InfoMemoize(msg string, args ...any) {
 		Count: 0,
 	}
 	memoizeLogs[log] = m
-	Info(fmt.Sprintf("[%d, %d]", time.Now().UnixMilli(), count)+" "+msg, args...)
+	println(fmt.Sprintf("[%d, %d]", time.Now().UnixMilli(), count)+" "+msg, args...)
 }
 
-func Error(msg string, args ...any) {
-	println("error: "+msg, args...)
+func DebugMemoize(msg string, args ...any) {
+	printMemoize(msg, args...)
+}
+
+func InfoMemoize(msg string, args ...any) {
+	printMemoize(msg, args...)
 }

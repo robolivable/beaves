@@ -19,8 +19,28 @@ func (b *Beaves) Manage(s controller.Switch) error {
 	if err != nil {
 		return err
 	}
-	for event := range events {
-		log.Info("%s", event.String())
+
+eventloop:
+	for {
+		time.Sleep(time.Duration(config.RuntimeConfig.EventLoopDelayMs) * time.Millisecond)
+		proc := []*radar.Event{}
+
+	loaderloop:
+		for {
+			select {
+			default:
+				break loaderloop
+			case event, ok := <-events:
+				if !ok {
+					break eventloop
+				}
+				proc = append(proc, event)
+			}
+		}
+
+		event := proc[len(proc)-1]
+		log.Debug("%s", event.String())
+
 		switch event.Action {
 		case radar.Entering:
 			log.Debug("openning relay")
@@ -36,6 +56,7 @@ func (b *Beaves) Manage(s controller.Switch) error {
 			}
 		}
 	}
+
 	return nil
 }
 

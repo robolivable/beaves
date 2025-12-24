@@ -86,7 +86,7 @@ type BTSentry struct {
 func (bts *BTSentry) Search() (chan *Event, error) {
 	response := make(chan *Event, bts.connectionPoolSize)
 	bts.adapter.SetConnectHandler(func(device bluetooth.Device, connected bool) {
-		log.InfoMemoize("new connection {device: %+v, connected: %t}", device, connected)
+		log.DebugMemoize("new connection {device: %+v, connected: %t}", device, connected)
 		if len(response) == bts.connectionPoolSize {
 			// NOTE: this is a DDoS guard
 			time.Sleep(time.Duration(100) * time.Millisecond)
@@ -98,7 +98,7 @@ func (bts *BTSentry) Search() (chan *Event, error) {
 			Name: device.Address.String(),
 		}
 		if !actor.Known() {
-			log.InfoMemoize("unknown actor: %v", actor)
+			log.DebugMemoize("unknown actor: %v", actor)
 			go func() {
 				time.Sleep(time.Duration(bts.disconnectionLimitDelayMs) * time.Millisecond)
 				device.Disconnect()
