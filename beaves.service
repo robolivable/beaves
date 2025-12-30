@@ -1,0 +1,15 @@
+[Unit]
+Description=Beaves Sentry Switch Manager
+After=multi-user.target
+After=network.target
+
+[Service]
+Type=idle
+ExecStart=<path to beaves executable>
+WorkingDirectory=<path to beaves working directory>
+User=root
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

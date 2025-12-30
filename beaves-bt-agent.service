@@ -1,0 +1,14 @@
+[Unit]
+Description=Spins up the BT agent to manage client connections
+After=multi-user.target
+After=network.target
+
+[Service]
+Type=idle
+ExecStart=<path to start-agent.sh script>
+User=root
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
