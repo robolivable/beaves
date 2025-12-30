@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/robolivable/beaves/log"
 	"periph.io/x/conn/v3/gpio"
 	"periph.io/x/conn/v3/gpio/gpioreg"
 	"periph.io/x/host/v3"
@@ -101,6 +102,7 @@ func (or *OptoRelay) String() string {
 }
 
 func (or *OptoRelay) On(d time.Duration) error {
+	log.Debug("OptoRelay.On: %s", or.String())
 	if or.state == On {
 		return nil
 	}
@@ -114,6 +116,7 @@ func (or *OptoRelay) On(d time.Duration) error {
 }
 
 func (or *OptoRelay) Off(d time.Duration) error {
+	log.Debug("OptoRelay.Off: %s", or.String())
 	if or.state == Off {
 		return nil
 	}
@@ -127,6 +130,7 @@ func (or *OptoRelay) Off(d time.Duration) error {
 }
 
 func (or *OptoRelay) Toggle(d time.Duration) error {
+	log.Debug("OptoRelay.Toggle: %s", or.String())
 	if !or.state.Valid() {
 		return fmt.Errorf("unable to toggle invalid state: %+v", or.state)
 	}

@@ -73,6 +73,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	log.Debug("main: %s", nor.String())
 	b := Beaves{sentry: nbts}
 	if err := b.Manage(nor); err != nil {
 		panic(err)
