@@ -59,6 +59,9 @@ func printMemoize(msg string, args ...any) {
 }
 
 func DebugMemoize(msg string, args ...any) {
+	if !config.RuntimeConfig.Log.Debug {
+		return
+	}
 	printMemoize(msg, args...)
 }
 
