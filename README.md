@@ -2,6 +2,10 @@
 
 Beacon Jeeves (Beaves) is a BLE-based proximity sentry that can manage switches over Raspberry Pi's GPIO. It uses `GPIO17` and `GPIO27` as a backup.
 
+#### iPhone users
+
+Beaves doesn't work with iPhones with enabled MAC address randomization. If you want to use an iPhone with Beaves you must disable this feature.
+
 ### BLE agent service
 
 This app depends on bt-agent utils to facilitate pairing. `start-agent.sh` manages the agent. Configure and install the `.service` files (using `systemctl`) in this project to run both the agent and Beaves on a Raspberry Pi.
