@@ -46,14 +46,12 @@ eventloop:
 		log.Debug("%s", event.String())
 
 		switch event.Action {
-		case radar.Entering:
-			log.Debug("openning relay")
+		case radar.Entering, radar.Exiting:
+			log.Debug("pressing button")
 			if err := s.On(time.Duration(1) * time.Second); err != nil {
 				log.Error(err.Error())
 				continue
 			}
-		case radar.Exiting:
-			log.Debug("closing relay")
 			if err := s.Off(time.Duration(1) * time.Second); err != nil {
 				log.Error(err.Error())
 				continue
@@ -73,7 +71,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	log.Debug("main: %s", nor.String())
 	b := Beaves{sentry: nbts}
 	if err := b.Manage(nor); err != nil {
 		panic(err)
