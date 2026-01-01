@@ -6,27 +6,27 @@ Beacon Jeeves (Beaves) is a BLE-based proximity sentry that can manage switches 
 
 Beaves doesn't work with iPhones with enabled MAC address randomization. If you want to use an iPhone with Beaves you must disable this feature.
 
+### Dependencies
+
+On Raspbian, you mainly need `bluez`, its debugging tools (used to facilitate pairing), and development files:
+
+```sh
+apt install bluez bluez-tools libbluetooth-dev
+```
+
 ### BLE agent service
 
 This app depends on bt-agent utils to facilitate pairing. `start-agent.sh` manages the agent. Configure and install the `.service` files (using `systemctl`) in this project to run both the agent and Beaves on a Raspberry Pi.
 
 When fully installed, Beaves runs autonomously on boot. It's designed to run forever and forget all paired devices on reboot. If your device stops pairing, it's likely the Pi restarted. In this case, simply "forget" the sentry on your device and re-pair it.
 
-#### Using a BLE dongle with Raspi
+##### Using a BLE dongle with Raspi
 
 Make sure you disable onboard bluetooth and the UART service that manages it:
 
 ```sh
 echo "dtoverlay=disable-bt" >> /boot/firmware/config.txt
 systemctl disable hciuart
-```
-
-### Dependencies
-
-On Raspbian, you mainly need `bluez`, its debugging tools (used to facilitate pairing), and development files:
-
-```sh
-apt install bluez bluez-tools libbluetooth-dev 
 ```
 
 ### Build
