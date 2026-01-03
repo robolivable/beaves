@@ -10,12 +10,30 @@ import (
 )
 
 type Beaves struct {
-	sentry radar.Proximity
+	Proximity radar.Proximity // proximity driver
+
+	Delay time.Duration // minimum time to wait between operations
+	last  time.Time
+}
+
+func (b *Beaves) Operate(s controller.Switch) error {
+	if time.Now().Before(b.last.Add(b.Delay)) {
+		return nil
+	}
+	log.Debug("pressing button")
+	if err := s.On(time.Duration(1) * time.Second); err != nil {
+		return err
+	}
+	if err := s.Off(time.Duration(1) * time.Second); err != nil {
+		return err
+	}
+	b.last = time.Now()
+	return nil
 }
 
 func (b *Beaves) Manage(s controller.Switch) error {
 	log.Debug("managing switch on %s", s.String())
-	events, err := b.sentry.Search()
+	events, err := b.Proximity.Search()
 	if err != nil {
 		return err
 	}
@@ -47,12 +65,7 @@ eventloop:
 
 		switch event.Action {
 		case radar.Entering, radar.Exiting:
-			log.Debug("pressing button")
-			if err := s.On(time.Duration(1) * time.Second); err != nil {
-				log.Error(err.Error())
-				continue
-			}
-			if err := s.Off(time.Duration(1) * time.Second); err != nil {
+			if err := b.Operate(s); err != nil {
 				log.Error(err.Error())
 				continue
 			}
@@ -71,7 +84,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	b := Beaves{sentry: nbts}
+	b := Beaves{
+		Proximity: nbts,
+		Delay:     time.Duration(config.RuntimeConfig.OperationDelayMs) * time.Millisecond,
+	}
 	if err := b.Manage(nor); err != nil {
 		panic(err)
 	}
