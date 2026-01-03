@@ -67,7 +67,8 @@ A `config.json` file is required at runtime in the working directory. E.g.:
     "enabled": true,
     "debug": false
   },
-  "eventLoopDelayMs": 3000
+  "eventLoopDelayMs": 3000,
+  "operationDelayMs": 30000
 }
 ```
 
